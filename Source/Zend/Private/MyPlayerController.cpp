@@ -15,7 +15,7 @@ AMyCharacter* AMyPlayerController::GetMyCharacterRef() const
 {
 	AMyCharacter* myCharacter = Cast<AMyCharacter>(GetPawn());
 
-	if(myCharacter)
+	if (myCharacter)
 		return myCharacter;
 
 	return nullptr;
@@ -25,4 +25,28 @@ AMyCharacter* AMyPlayerController::GetMyCharacterRef() const
 void AMyPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if(IsLocalController())
+		ConfigureHud();
+}
+
+void AMyPlayerController::OnPossess(APawn* aPawn)
+{
+	Super::OnPossess(aPawn);
+
+	ConfigureCharacterEvents();
+}
+
+void AMyPlayerController::ConfigureCharacterEvents()
+{
+	AMyCharacter* MyCharacter = GetMyCharacterRef();
+
+	if (MyCharacter)
+	{
+		MyCharacter->OnMyHealthChangedSignature.AddDynamic(this, &AMyPlayerController::OnCharacterHealthChanged);
+		MyCharacter->OnMyHealthInDangerZoneSignature.AddDynamic(this, &AMyPlayerController::OnCharacterHealthInDangerZoneChanged);
+
+		MyCharacter->OnMyThirstChangedSignature.AddDynamic(this, &AMyPlayerController::OnCharacterThirstChanged);
+		MyCharacter->OnMyThirstInDangerZoneSignature.AddDynamic(this, &AMyPlayerController::OnCharacterThirstInDangerZoneChanged);
+	}
 }
