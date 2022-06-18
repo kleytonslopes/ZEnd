@@ -37,6 +37,28 @@ void AMyPlayerController::OnPossess(APawn* aPawn)
 	ConfigureCharacterEvents();
 }
 
+void AMyPlayerController::ToggleInteractingMode()
+{
+	if(bIsInteractingMode)
+		EndCursorMode();
+	else
+		BeginCursorMode();
+}
+
+void AMyPlayerController::BeginCursorMode()
+{
+	bIsInteractingMode = true;
+	SetInputMode(FInputModeGameAndUI());
+	bShowMouseCursor = true;
+}
+
+void AMyPlayerController::EndCursorMode()
+{
+	bIsInteractingMode = false;
+	SetInputMode(FInputModeGameOnly());
+	bShowMouseCursor = false;
+}
+
 void AMyPlayerController::ConfigureCharacterEvents()
 {
 	AMyCharacter* MyCharacter = GetMyCharacterRef();

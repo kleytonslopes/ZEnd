@@ -1,0 +1,20 @@
+[
+	{
+		"Name": "item_none",
+		"Id": "ce14a9a7-5784-4686-8f9f-aa40adcbd919",
+		"Code": "ce14a9a7-5784-4686-8f9f-aa40adcbd919",
+		"Description": "NSLOCTEXT(\"[B9BF2A8E44C7F4B07742AEA694956D5C]\", \"C117CF7E4FC7F629B0F9BEB372EAF0F0\", \"A Invalid Item.\")",
+		"Icon": "Texture2D'/Game/Meshes/Icons/item_none.item_none'",
+		"Mesh": "StaticMesh'/Game/Meshes/sm_item_none.sm_item_none'",
+		"DropMesh": "StaticMesh'/Game/Meshes/sm_item_none.sm_item_none'"
+	},
+	{
+		"Name": "item_none_2",
+		"Id": "84f6ddb4-6328-426e-979f-1265b43c4af5",
+		"Code": "84f6ddb4-6328-426e-979f-1265b43c4af5",
+		"Description": "NSLOCTEXT(\"[B9BF2A8E44C7F4B07742AEA694956D5C]\", \"3D336F8C4950D5B8C984CEB30DE8143D\", \"A Invalid Item 2\")",
+		"Icon": "Texture2D'/Game/Meshes/Icons/item_none.item_none'",
+		"Mesh": "StaticMesh'/Game/Meshes/sm_item_none.sm_item_none'",
+		"DropMesh": "StaticMesh'/Game/Meshes/sm_item_none.sm_item_none'"
+	}
+]

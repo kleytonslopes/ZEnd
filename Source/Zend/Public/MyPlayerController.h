@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Components/MyInventoryComponent.h"
 #include "MyPlayerController.generated.h"
 
 class AMyCharacter;
@@ -16,6 +17,9 @@ class ZEND_API AMyPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
+private:
+	bool bIsInteractingMode;
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChangedPercentSignature OnHealthChangedPercentSignature;
@@ -33,6 +37,13 @@ public:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* aPawn) override;
 
+	UFUNCTION(BlueprintCallable)
+	void ToggleInteractingMode();
+	UFUNCTION(BlueprintCallable)
+	void BeginCursorMode();
+	UFUNCTION(BlueprintCallable)
+	void EndCursorMode();
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnCharacterHealthChanged(float Percent);
 	UFUNCTION(BlueprintImplementableEvent)
@@ -46,6 +57,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ConfigureHud();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void CallUpdatePlayerDefaultInventoryUI(const TArray<FItemGroup>& ItemGroups);
 private:
 	void ConfigureCharacterEvents();
 };

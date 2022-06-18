@@ -8,6 +8,11 @@
 #include "Camera/CameraComponent.h"
 #include "Components/MyStatusManagerComponent.h"
 #include "Components/MyStatusComponent.h"
+#include "Components/MyInventoryComponent.h"
+#include "DrawDebugHelpers.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Interfaces/MyInteractableInterface.h"
+#include "MyPlayerController.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -18,7 +23,7 @@ AMyCharacter::AMyCharacter()
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 
-	GetCapsuleComponent()->bHiddenInGame = false;
+	GetCapsuleComponent()->bHiddenInGame = true;
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
@@ -38,6 +43,8 @@ AMyCharacter::AMyCharacter()
 	HealthComponent = CreateDefaultSubobject<UMyStatusComponent>(TEXT("HealthComponent"));
 	ThirstComponent = CreateDefaultSubobject<UMyStatusComponent>(TEXT("ThirstComponent"));
 
+	DefaultInventory = CreateDefaultSubobject<UMyInventoryComponent>(TEXT("DefaultInventory"));
+
 	CurrentSpeed = MaxWalkSpeed;
 }
 
@@ -46,6 +53,8 @@ void AMyCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	ConfigureStatusComponents();
+
+	ConfigureDefaultInventoryComponent();
 }
 
 void AMyCharacter::InterpolateWalkingSpeed(float DeltaTime)
@@ -184,6 +193,54 @@ void AMyCharacter::EndRun()
 	}
 }
 
+void AMyCharacter::Interact()
+{
+	FHitResult MouseHitResult;
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	bool bMouseHitResult = PC->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, MouseHitResult);
+	if (bMouseHitResult)
+	{
+		FVector StartLocation;
+		FRotator Rotation;
+		FVector EndLocation;
+
+		FHitResult HitResult;
+		bool Success;
+
+
+		GetActorEyesViewPoint(StartLocation, Rotation);
+		FVector MouseLocation = MouseHitResult.ImpactPoint;
+		FVector FakeEnd = FVector(MouseLocation - StartLocation);
+
+		EndLocation = StartLocation + (FakeEnd.Rotation().Vector() * 400);
+
+		///UUserWidget* InteractionTex = InteractionTextWidget->GetWidget();
+
+		TraceEyesLine(ECollisionChannel::ECC_Visibility, EndLocation, HitResult, Success, true);
+
+		AActor* HitActor = HitResult.GetActor();
+
+		if (HitActor)
+		{
+			///if (InteractionTex)
+			///{
+				bool bHasInterface = UKismetSystemLibrary::DoesImplementInterface(HitActor, UMyInteractableInterface::StaticClass());
+				if (bHasInterface)
+				{
+					IMyInteractableInterface::Execute_Interact(HitActor, this);
+					/*AMyPlayerController* MyPC = Cast<AMyPlayerController>(GetController());
+					if (MyPC)
+					{
+						AMyInteractables* Interacted = Cast<AMyInteractables>(HitActor);
+						FVector InteractedLocation = HitActor->GetActorLocation() + Interacted->PlayerPointToInteract;
+						MyPC->MoveToTargetLocation(InteractedLocation);
+					}*/
+				}
+			///}
+		}
+	}
+}
+
 void AMyCharacter::OnMyHealthChangedEvent(float Percent)
 {
 	OnMyHealthChangedSignature.Broadcast(Percent);
@@ -204,6 +261,23 @@ void AMyCharacter::OnMyThirstInDangerZoneEvent(bool IsInDangerZone)
 	OnMyThirstInDangerZoneSignature.Broadcast(IsInDangerZone);
 }
 
+void AMyCharacter::OnDefaultInventoryChangedEvent()
+{
+	AMyPlayerController* MyPlayerController = Cast<AMyPlayerController>(Controller);
+	if (MyPlayerController)
+	{
+		MyPlayerController->CallUpdatePlayerDefaultInventoryUI(DefaultInventory->GetItemGroups());
+	}
+}
+
+void AMyCharacter::AddItemsToInventory(const TArray<FItem>& ItemsToAdd)
+{
+	if (DefaultInventory)
+	{
+		DefaultInventory->AddItems(ItemsToAdd);
+	}
+}
+
 void AMyCharacter::ConfigureStatusComponents()
 {
 	HealthComponent->OnStatusValueChangedSignature.AddDynamic(this, &AMyCharacter::OnMyHealthChangedEvent);
@@ -217,8 +291,32 @@ void AMyCharacter::ConfigureStatusComponents()
 	StatusManager->SetThirstComponent(ThirstComponent);
 }
 
+void AMyCharacter::ConfigureDefaultInventoryComponent()
+{
+	DefaultInventory->OnInventoryChangedSignature.AddDynamic(this, &AMyCharacter::OnDefaultInventoryChangedEvent);
+	
+	CreateDefaultInventory();
+}
+
 bool AMyCharacter::CheckIfStatusInDangerZone() const
 {
 	return HealthComponent->GetIfInDangerZone();	
+}
+
+void AMyCharacter::TraceEyesLine(ECollisionChannel CollisionChannel, FVector EndLocation, FHitResult& HitResult, bool& Success, bool DrawDebug)
+{
+	FVector StartLocation;
+	FRotator Rotation;
+	FCollisionQueryParams TraceParameters;
+	TraceParameters.AddIgnoredActor(GetOwner());
+	TraceParameters.AddIgnoredActor(this);
+	TraceParameters.bTraceComplex = true;
+
+	GetActorEyesViewPoint(StartLocation, Rotation);
+
+	Success = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Pawn, TraceParameters);
+
+	if (DrawDebug)
+		DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 2.0f);
 }
 
