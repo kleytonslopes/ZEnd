@@ -87,6 +87,8 @@ protected:
 
 public:	
 	virtual void Tick(float DeltaTime) override;
+	UFUNCTION()
+	void OnTakeAnyDamageEvent(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	UFUNCTION(BlueprintCallable, Category = "My Character")
 	void LookUp(float value);

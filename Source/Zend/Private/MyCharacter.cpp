@@ -74,6 +74,11 @@ void AMyCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AMyCharacter::OnTakeAnyDamageEvent(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	HealthComponent->DecreaseValue(Damage);
+}
+
 void AMyCharacter::LookUp(float value)
 {
 	if (Controller && value != 0.f)
@@ -280,6 +285,8 @@ void AMyCharacter::AddItemsToInventory(const TArray<FItem>& ItemsToAdd)
 
 void AMyCharacter::ConfigureStatusComponents()
 {
+	OnTakeAnyDamage.AddDynamic(this, &AMyCharacter::OnTakeAnyDamageEvent);
+
 	HealthComponent->OnStatusValueChangedSignature.AddDynamic(this, &AMyCharacter::OnMyHealthChangedEvent);
 	HealthComponent->OnStatusValueInDangerZoneSignature.AddDynamic(this, &AMyCharacter::OnMyHealthInDangerZoneEvent);
 	OnMyHealthChangedEvent(HealthComponent->GetPercent());
