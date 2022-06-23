@@ -17,6 +17,7 @@ class UMyInventoryComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsWalkingSignature, bool, IsWalking);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsRunningSignature, bool, IsRunning);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthIsEmptySignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMyHealthChangedSignature, float, Percent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMyHealthInDangerZoneSignature, bool, IsInDangerZone);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMyThirstChangedSignature, float, Percent);
@@ -33,6 +34,8 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "My Character")
 	FOnIsRunningSignature OnIsRunningSignature;
 
+	UPROPERTY(BlueprintAssignable, Category = "My Character")
+	FOnHealthIsEmptySignature OnHealthIsEmptySignature;
 	UPROPERTY(BlueprintAssignable, Category = "My Character")
 	FOnMyHealthChangedSignature OnMyHealthChangedSignature;
 	UPROPERTY(BlueprintAssignable, Category = "My Character")
@@ -77,6 +80,14 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "My Character")
 	float CurrentSpeed;
 
+	UPROPERTY(BlueprintReadOnly, Category = "My Character")
+	bool bIsDead = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "My Character")
+	float MaxZoomOut = 400.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "My Character")
+	float MaxZoomIn = 10.f;
+
 public:
 	AMyCharacter();
 
@@ -103,6 +114,12 @@ public:
 	void MoveRight(float value);
 
 	UFUNCTION(BlueprintCallable, Category = "My Character")
+	void ZoonIn(float value);
+	UFUNCTION(BlueprintCallable, Category = "My Character")
+	void ZoomOut(float value);
+
+
+	UFUNCTION(BlueprintCallable, Category = "My Character")
 	void BeginJump();
 
 	UFUNCTION(BlueprintCallable, Category = "My Character")
@@ -125,6 +142,8 @@ public:
 
 public:
 	UFUNCTION(Category = "My Character")
+	void OnHealthIsEmptyEvent();
+	UFUNCTION(Category = "My Character")
 	void OnMyHealthChangedEvent(float Percent);
 	UFUNCTION(Category = "My Character")
 	void OnMyHealthInDangerZoneEvent(bool IsInDangerZone);
@@ -142,9 +161,20 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "My Character")
 	void AddItemsToInventory(const TArray<FItem>& ItemsToAdd);
+
+	UFUNCTION(BlueprintCallable, Category = "My Character")
+	void SetContainerInventory(UMyInventoryComponent* ContainerInventory);
+
+	UFUNCTION(BlueprintCallable, Category = "My Character")
+	void GetAllItemsFromInventory(UMyInventoryComponent* OtherInventory);
+
+	UMyStatusComponent* GetHealthComponent() const;
+	UMyStatusComponent* GetThirstComponent() const;
+	TArray<FItemDataSaveGame> GetItemsToSaveData() const;
 private:
 	void ConfigureStatusComponents();
 	void ConfigureDefaultInventoryComponent();
 	bool CheckIfStatusInDangerZone() const;
 	void TraceEyesLine(ECollisionChannel CollisionChannel, FVector EndLocation, FHitResult& HitResult, bool& Success, bool DrawDebug);
+	void KillSelf();
 };

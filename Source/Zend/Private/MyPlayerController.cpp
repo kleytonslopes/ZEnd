@@ -4,11 +4,14 @@
 #include "MyPlayerController.h"
 #include "MyCharacter.h"
 #include "Camera/MyPlayerCameraManager.h"
+#include "Components/MyInventoryManagerComponent.h"
 
 
 AMyPlayerController::AMyPlayerController()
 {
 	PlayerCameraManagerClass = AMyPlayerCameraManager::StaticClass();
+
+	InventoryManager = CreateDefaultSubobject<UMyInventoryManagerComponent>(TEXT("InventoryManager"));
 }
 
 AMyCharacter* AMyPlayerController::GetMyCharacterRef() const
@@ -57,6 +60,14 @@ void AMyPlayerController::EndCursorMode()
 	bIsInteractingMode = false;
 	SetInputMode(FInputModeGameOnly());
 	bShowMouseCursor = false;
+}
+
+void AMyPlayerController::TransferAllItems(UMyInventoryComponent* FromInventory, UMyInventoryComponent* ToInventory)
+{
+	InventoryManager->SetPrymaryInventory(FromInventory);
+	InventoryManager->SetSecondaryInventory(ToInventory);
+
+	InventoryManager->TransferAllItensFromTo(FromInventory, ToInventory);
 }
 
 void AMyPlayerController::ConfigureCharacterEvents()

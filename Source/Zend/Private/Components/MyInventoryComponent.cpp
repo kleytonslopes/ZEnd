@@ -12,7 +12,7 @@ UMyInventoryComponent::UMyInventoryComponent()
 
 	static ConstructorHelpers::FObjectFinder<UDataTable> ItemDataTableObject(TEXT(DATA_ITEM));
 
-	if(ItemDataTableObject.Succeeded()) ItemDataTable = ItemDataTableObject.Object;
+	if (ItemDataTableObject.Succeeded()) ItemDataTable = ItemDataTableObject.Object;
 }
 
 void UMyInventoryComponent::BeginPlay()
@@ -27,6 +27,7 @@ void UMyInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 
 void UMyInventoryComponent::AddItem(FItem NewItem)
 {
+	NewItem.GenerateNewCode();
 	bool groupFound = false;
 	if (ItemGroups.Num())
 	{
@@ -78,4 +79,82 @@ void UMyInventoryComponent::AddItemByName(FName ItemName)
 TArray<FItemGroup> UMyInventoryComponent::GetItemGroups() const
 {
 	return ItemGroups;
+}
+
+TArray<FItem> UMyInventoryComponent::GetItems() const
+{
+	TArray<FItem> TempItems;
+
+	for (int32 g = 0; g < ItemGroups.Num(); g++)
+	{
+		for (int32 i = 0; i < ItemGroups[g].Itens.Num(); i++)
+		{
+			TempItems.Add(ItemGroups[g].Itens[i]);
+		}
+	}
+
+	return TempItems;
+}
+
+FItem UMyInventoryComponent::GetItemByCode(FString ItemCode, bool& HasItem, int32& GroupIndex, int32& ItemIndex)
+{
+	for (int32 g = 0; g < ItemGroups.Num(); g++)
+	{
+		for (int32 i = 0; i < ItemGroups[g].Itens.Num(); i++)
+		{
+			if (ItemGroups[g].Itens[i].Code == ItemCode)
+			{
+				GroupIndex = g;
+				ItemIndex = i;
+				HasItem = true;
+				return ItemGroups[g].Itens[i];
+			}
+		}
+	}
+
+	HasItem = false;
+	return FItem();
+}
+
+void UMyInventoryComponent::RemoveItemFromCode(FString ItemCode, bool& WasRemoved)
+{
+	bool HasItem;
+	int32 ItemIndex;
+	int32 GroupIndex;
+
+	GetItemByCode(ItemCode, HasItem, GroupIndex, ItemIndex);
+
+	if (HasItem)
+	{
+		RemoveItem(GroupIndex, ItemIndex);
+		WasRemoved = true;
+		return;
+	}
+
+	WasRemoved = false;
+}
+
+void UMyInventoryComponent::RemoveItem(int32 GroupIndex, int32 ItemIndex)
+{
+	ItemGroups[GroupIndex].Itens.RemoveAt(ItemIndex);
+	
+	if(ItemGroups[GroupIndex].Itens.Num() == 0)
+		ItemGroups.RemoveAt(GroupIndex);
+
+	OnInventoryChangedSignature.Broadcast();
+}
+
+TArray<FItemDataSaveGame> UMyInventoryComponent::GetItemsToSaveGame() const
+{
+	TArray<FItem> ItensTemp = GetItems();
+	TArray< FItemDataSaveGame> ItensData;
+	for (int32 i = 0; i < ItensTemp.Num(); i++)
+	{
+		FItemDataSaveGame ItemData;
+		ItemData.SetData(ItensTemp[i]);
+
+		ItensData.Add(ItemData);
+	}
+
+	return ItensData;
 }

@@ -27,6 +27,8 @@ public:
 		Durability = 1.f;
 		MaxDurability = 1.f;
 		DurabilityPerUse = 1.f;
+
+		GenerateNewCode();
 	}
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -58,6 +60,20 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UStaticMesh* DropMesh;
+
+	bool IsValid()
+	{
+		if(Id != "")
+			return true;
+
+		return false;
+	}
+
+	void GenerateNewCode()
+	{
+		Code = FGuid::NewGuid().ToString();
+		UE_LOG(LogTemp, Warning, TEXT("New Code %s generated to Item %s"), *Code, *Id);
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -98,6 +114,36 @@ public:
 	}
 };
 
+USTRUCT(BlueprintType)
+struct FItemDataSaveGame
+{
+	GENERATED_BODY();
+
+public:
+	FItemDataSaveGame()
+	{
+		ItemName = FName("");
+		ItemCode = "";
+		ItemDurability = 0;
+	}
+
+	UPROPERTY(BlueprintReadWrite)
+		FName ItemName;
+
+	UPROPERTY(BlueprintReadWrite)
+		FString ItemCode;
+
+	UPROPERTY(BlueprintReadWrite)
+		float ItemDurability;
+
+	void SetData(FItem ItemData)
+	{
+		ItemName = ItemData.Name;
+		ItemCode = ItemData.Code;
+		ItemDurability = ItemData.Durability;
+	}
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE (FOnInventoryChangedSignature);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -134,4 +180,20 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<FItemGroup> GetItemGroups() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TArray<FItem> GetItems() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FItem GetItemByCode(FString ItemCode, bool& HasItem, int32& GroupIndex, int32& ItemIndex);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveItemFromCode(FString ItemCode, bool& WasRemoved);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveItem(int32 GroupIndex, int32 ItemIndex);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TArray<FItemDataSaveGame> GetItemsToSaveGame() const;
+
 };

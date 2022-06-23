@@ -27,9 +27,11 @@ void UMyStatusComponent::ResetValue()
 	{
 	case EStatusMode::SM_UpDown:
 		CurrentValue = MaxValue;
+		bIsOnLimit = false;
 		break;
 	case EStatusMode::SM_DownUp:
 		CurrentValue = 0.f;
+		bIsOnLimit = false;
 		break;
 	default:
 		break;
@@ -61,6 +63,7 @@ void UMyStatusComponent::IncreaseValue(float Value)
 
 	OnStatusValueChangedSignature.Broadcast(GetPercent());
 	CheckIfInDangerZone();
+	AlertIfOnLimit();
 }
 
 void UMyStatusComponent::DecreaseValue(float Value)
@@ -70,6 +73,7 @@ void UMyStatusComponent::DecreaseValue(float Value)
 
 	OnStatusValueChangedSignature.Broadcast(GetPercent());
 	CheckIfInDangerZone();
+	AlertIfOnLimit();
 }
 
 void UMyStatusComponent::StartConsumeByTime()
@@ -132,9 +136,43 @@ void UMyStatusComponent::SetIsRunning(bool IsRunning)
 	bIsRunning = IsRunning;
 }
 
+float UMyStatusComponent::GetCurrentValue() const
+{
+	return CurrentValue;
+}
+
 void UMyStatusComponent::CheckIfInDangerZone()
 {
 	OnStatusValueInDangerZoneSignature.Broadcast(GetIfInDangerZone());
+}
+
+void UMyStatusComponent::AlertIfOnLimit()
+{
+	switch (Mode)
+	{
+	case EStatusMode::SM_UpDown:
+		if (CurrentValue <= 0.f)
+		{
+			OnAlertIfOnLimitSignature.Broadcast();
+			bIsOnLimit = true;
+		}
+		else
+			bIsOnLimit = false;
+
+		break;
+	case EStatusMode::SM_DownUp:
+		if (CurrentValue >= MaxValue)
+		{
+			OnAlertIfOnLimitSignature.Broadcast();
+			bIsOnLimit = true;
+		}
+		else
+			bIsOnLimit = false;
+
+		break;
+	default:
+		break;
+	}
 }
 
 float UMyStatusComponent::GetValueToMultiply() const

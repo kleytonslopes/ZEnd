@@ -8,6 +8,8 @@
 #include "MyPlayerController.generated.h"
 
 class AMyCharacter;
+class UMyInventoryComponent;
+class UMyInventoryManagerComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChangedPercentSignature, float, Percent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnThirstChangedPercentSignature, float, Percent);
@@ -17,9 +19,6 @@ class ZEND_API AMyPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
-private:
-	bool bIsInteractingMode;
-
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChangedPercentSignature OnHealthChangedPercentSignature;
@@ -27,6 +26,11 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnThirstChangedPercentSignature OnThirstChangedPercentSignature;
 
+	UPROPERTY(BlueprintReadOnly)
+	UMyInventoryManagerComponent* InventoryManager;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsInteractingMode;
 protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	AMyCharacter* GetMyCharacterRef() const;
@@ -59,6 +63,12 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void CallUpdatePlayerDefaultInventoryUI(const TArray<FItemGroup>& ItemGroups);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetContainerInventory(UMyInventoryComponent* ContainerInventory);
+
+	UFUNCTION(BlueprintCallable)
+	void TransferAllItems(UMyInventoryComponent* FromInventory, UMyInventoryComponent* ToInventory);
 private:
 	void ConfigureCharacterEvents();
 };

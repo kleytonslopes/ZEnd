@@ -38,6 +38,7 @@ enum EStatusMode
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam (FOnStatusValueChangedSignature, float, Percent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam (FOnStatusValueInDangerZoneSignature, bool, IsInDangerZone);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE (FOnAlertIfOnLimitSignature);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ZEND_API UMyStatusComponent : public UActorComponent
@@ -55,9 +56,15 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnStatusValueInDangerZoneSignature OnStatusValueInDangerZoneSignature;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnAlertIfOnLimitSignature OnAlertIfOnLimitSignature;
+
 protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	FStatusMultipliers StatusMultipliers;
+
+	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly)
+	bool bIsOnLimit = true;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	bool bConsumeByTime = true;
@@ -121,8 +128,11 @@ public:
 	void SetIsWalking(bool IsWalking);
 	UFUNCTION(BlueprintCallable)
 	void SetIsRunning(bool IsRunning);
+
+	UFUNCTION(BlueprintCallable)
+	float GetCurrentValue() const;
 private:
 	void CheckIfInDangerZone();
-	
+	void AlertIfOnLimit();
 	float GetValueToMultiply() const;
 };

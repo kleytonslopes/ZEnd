@@ -13,6 +13,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Interfaces/MyInteractableInterface.h"
 #include "MyPlayerController.h"
+#include "Utils/MySaveGame.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -51,7 +52,7 @@ AMyCharacter::AMyCharacter()
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	ConfigureStatusComponents();
 
 	ConfigureDefaultInventoryComponent();
@@ -107,7 +108,7 @@ void AMyCharacter::MoveForward(float value)
 
 		OnIsWalkingSignature.Broadcast(true);
 		OnIsRunningSignature.Broadcast(bWantToRun);
-		
+
 		if (CheckIfStatusInDangerZone())
 			EndRun();
 	}
@@ -142,6 +143,21 @@ void AMyCharacter::MoveRight(float value)
 	}
 }
 
+void AMyCharacter::ZoonIn(float value)
+{
+	float currentZoom = CameraOffsetArm->TargetArmLength;
+	float newZoom = FMath::Clamp(currentZoom + 10, MaxZoomIn, MaxZoomOut);
+	CameraOffsetArm->TargetArmLength = newZoom;
+}
+
+void AMyCharacter::ZoomOut(float value)
+{
+	float currentZoom = CameraOffsetArm->TargetArmLength;
+	float newZoom = FMath::Clamp(currentZoom - 10, MaxZoomIn, MaxZoomOut);
+
+	CameraOffsetArm->TargetArmLength = newZoom;
+}
+
 void AMyCharacter::BeginJump()
 {
 	if (Controller)
@@ -169,7 +185,7 @@ void AMyCharacter::EndCrouch()
 
 void AMyCharacter::ToggleCrouch()
 {
-	if(GetMovementComponent()->IsCrouching())
+	if (GetMovementComponent()->IsCrouching())
 		EndCrouch();
 	else
 		BeginCrouch();
@@ -193,7 +209,7 @@ void AMyCharacter::EndRun()
 	{
 		bWantToRun = false;
 		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
-		if(CheckIfStatusInDangerZone())
+		if (CheckIfStatusInDangerZone())
 			GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed / 2;
 	}
 }
@@ -229,21 +245,26 @@ void AMyCharacter::Interact()
 		{
 			///if (InteractionTex)
 			///{
-				bool bHasInterface = UKismetSystemLibrary::DoesImplementInterface(HitActor, UMyInteractableInterface::StaticClass());
-				if (bHasInterface)
+			bool bHasInterface = UKismetSystemLibrary::DoesImplementInterface(HitActor, UMyInteractableInterface::StaticClass());
+			if (bHasInterface)
+			{
+				IMyInteractableInterface::Execute_Interact(HitActor, this);
+				/*AMyPlayerController* MyPC = Cast<AMyPlayerController>(GetController());
+				if (MyPC)
 				{
-					IMyInteractableInterface::Execute_Interact(HitActor, this);
-					/*AMyPlayerController* MyPC = Cast<AMyPlayerController>(GetController());
-					if (MyPC)
-					{
-						AMyInteractables* Interacted = Cast<AMyInteractables>(HitActor);
-						FVector InteractedLocation = HitActor->GetActorLocation() + Interacted->PlayerPointToInteract;
-						MyPC->MoveToTargetLocation(InteractedLocation);
-					}*/
-				}
+					AMyInteractables* Interacted = Cast<AMyInteractables>(HitActor);
+					FVector InteractedLocation = HitActor->GetActorLocation() + Interacted->PlayerPointToInteract;
+					MyPC->MoveToTargetLocation(InteractedLocation);
+				}*/
+			}
 			///}
 		}
 	}
+}
+
+void AMyCharacter::OnHealthIsEmptyEvent()
+{
+	KillSelf();
 }
 
 void AMyCharacter::OnMyHealthChangedEvent(float Percent)
@@ -283,12 +304,49 @@ void AMyCharacter::AddItemsToInventory(const TArray<FItem>& ItemsToAdd)
 	}
 }
 
+void AMyCharacter::SetContainerInventory(UMyInventoryComponent* ContainerInventory)
+{
+	AMyPlayerController* MyPlayerController = Cast<AMyPlayerController>(Controller);
+	if (MyPlayerController)
+	{
+		MyPlayerController->SetContainerInventory(ContainerInventory);
+	}
+}
+
+void AMyCharacter::GetAllItemsFromInventory(UMyInventoryComponent* OtherInventory)
+{
+	AMyPlayerController* MyPlayerController = Cast<AMyPlayerController>(Controller);
+	if (OtherInventory && MyPlayerController)
+	{
+		if (MyPlayerController)
+		{
+			MyPlayerController->TransferAllItems(OtherInventory, DefaultInventory);
+		}
+	}
+}
+
+UMyStatusComponent* AMyCharacter::GetHealthComponent() const
+{
+	return HealthComponent;
+}
+
+UMyStatusComponent* AMyCharacter::GetThirstComponent() const
+{
+	return ThirstComponent;
+}
+
+TArray<FItemDataSaveGame> AMyCharacter::GetItemsToSaveData() const
+{
+	return DefaultInventory->GetItemsToSaveGame();
+}
+
 void AMyCharacter::ConfigureStatusComponents()
 {
 	OnTakeAnyDamage.AddDynamic(this, &AMyCharacter::OnTakeAnyDamageEvent);
 
 	HealthComponent->OnStatusValueChangedSignature.AddDynamic(this, &AMyCharacter::OnMyHealthChangedEvent);
 	HealthComponent->OnStatusValueInDangerZoneSignature.AddDynamic(this, &AMyCharacter::OnMyHealthInDangerZoneEvent);
+	HealthComponent->OnAlertIfOnLimitSignature.AddDynamic(this, &AMyCharacter::OnHealthIsEmptyEvent);
 	OnMyHealthChangedEvent(HealthComponent->GetPercent());
 	StatusManager->SetHealthComponent(HealthComponent);
 
@@ -301,13 +359,13 @@ void AMyCharacter::ConfigureStatusComponents()
 void AMyCharacter::ConfigureDefaultInventoryComponent()
 {
 	DefaultInventory->OnInventoryChangedSignature.AddDynamic(this, &AMyCharacter::OnDefaultInventoryChangedEvent);
-	
+
 	CreateDefaultInventory();
 }
 
 bool AMyCharacter::CheckIfStatusInDangerZone() const
 {
-	return HealthComponent->GetIfInDangerZone();	
+	return HealthComponent->GetIfInDangerZone();
 }
 
 void AMyCharacter::TraceEyesLine(ECollisionChannel CollisionChannel, FVector EndLocation, FHitResult& HitResult, bool& Success, bool DrawDebug)
@@ -325,5 +383,15 @@ void AMyCharacter::TraceEyesLine(ECollisionChannel CollisionChannel, FVector End
 
 	if (DrawDebug)
 		DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 2.0f);
+}
+
+void AMyCharacter::KillSelf()
+{
+	if (!bIsDead)
+	{
+		bIsDead = true;
+
+		Destroy();
+	}
 }
 
