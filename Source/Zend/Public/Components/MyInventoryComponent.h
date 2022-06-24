@@ -8,6 +8,7 @@
 #include "MyInventoryComponent.generated.h"
 
 class UTexture2D;
+class AMyItem;
 
 USTRUCT(BlueprintType)
 struct FItem : public FTableRowBase
@@ -27,6 +28,7 @@ public:
 		Durability = 1.f;
 		MaxDurability = 1.f;
 		DurabilityPerUse = 1.f;
+		ItemClass = nullptr;
 
 		GenerateNewCode();
 	}
@@ -60,6 +62,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UStaticMesh* DropMesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<AMyItem> ItemClass;
 
 	bool IsValid()
 	{

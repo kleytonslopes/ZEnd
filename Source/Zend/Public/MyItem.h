@@ -8,11 +8,17 @@
 #include "Engine/DataTable.h"
 #include "MyItem.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnItemUsedSignature);
+
 UCLASS()
 class ZEND_API AMyItem : public AActor
 {
 	GENERATED_BODY()
 	
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnItemUsedSignature OnItemUsedSignature;
+
 public:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Item")
 	UStaticMeshComponent* Mesh;
@@ -30,7 +36,8 @@ public:
 	AMyItem();
 
 	UFUNCTION(BlueprintCallable)
-	void UseItem();
+	virtual void UseItem();
+
 protected:
 	virtual void BeginPlay() override;
 

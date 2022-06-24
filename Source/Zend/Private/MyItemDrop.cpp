@@ -7,6 +7,8 @@
 #include "Engine/DataTable.h"
 #include "../Zend.h"
 #include "MyCharacter.h"
+#include "MyItem.h"
+#include "Components/MyInventoryComponent.h"
 
 AMyItemDrop::AMyItemDrop()
 {
@@ -30,7 +32,13 @@ void AMyItemDrop::OnInteract(AActor* Caller)
 		AMyCharacter* CharacterCaller = Cast<AMyCharacter>(Caller);
 		if (CharacterCaller)
 		{
+			FActorSpawnParameters SpawnParameters;
+			SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			AMyItem* Item = GetWorld()->SpawnActor<AMyItem>(Items[0].ItemClass, GetActorLocation(), GetActorRotation(), SpawnParameters);
 			CharacterCaller->AddItemsToInventory(Items);
+			CharacterCaller->SetItemEquipped(Item);
+			
 			Destroy();
 		}
 	}

@@ -14,10 +14,16 @@
 #include "Interfaces/MyInteractableInterface.h"
 #include "MyPlayerController.h"
 #include "Utils/MySaveGame.h"
+#include "MyItem.h"
+#include "../Zend.h"
 
 AMyCharacter::AMyCharacter()
 {
 	///PrimaryActorTick.bCanEverTick = true;
+
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_ITEM_CHANNEL, ECR_Ignore);
+
+	GetMesh()->SetCollisionResponseToChannel(COLLISION_ITEM_CHANNEL, ECR_Ignore);
 
 	GetMovementComponent()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -262,6 +268,21 @@ void AMyCharacter::Interact()
 	}
 }
 
+void AMyCharacter::UsePrimaryItem()
+{
+	if (!EquippedItem)
+		return;
+
+	EquippedItem->UseItem();
+
+	if (EquippedItem->ItemInfor.Durability <= 0.f)
+	{
+
+		EquippedItem->Destroy();
+		OnItemEquippedSignature.Broadcast(FItem());
+	}
+}
+
 void AMyCharacter::OnHealthIsEmptyEvent()
 {
 	KillSelf();
@@ -323,6 +344,31 @@ void AMyCharacter::GetAllItemsFromInventory(UMyInventoryComponent* OtherInventor
 			MyPlayerController->TransferAllItems(OtherInventory, DefaultInventory);
 		}
 	}
+}
+
+void AMyCharacter::SetItemEquipped(AMyItem* ItemToEquipped)
+{
+	if (!ItemToEquipped)
+		return;
+
+	if (EquippedItem)
+		EquippedItem->Destroy();
+
+	EquippedItem = ItemToEquipped;
+	ItemToEquipped->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("PrimaryItemSlot"));
+
+	ItemToEquipped->OnItemUsedSignature.Clear();
+	ItemToEquipped->OnItemUsedSignature.AddDynamic(this, &AMyCharacter::OnPrimaryItemUsedEvent);
+
+	OnItemEquippedSignature.Broadcast(ItemToEquipped->ItemInfor);
+}
+
+void AMyCharacter::OnPrimaryItemUsedEvent()
+{
+	if (EquippedItem)
+		OnItemEquippedSignature.Broadcast(EquippedItem->ItemInfor);
+	else
+		OnItemEquippedSignature.Broadcast(FItem());
 }
 
 UMyStatusComponent* AMyCharacter::GetHealthComponent() const

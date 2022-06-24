@@ -31,6 +31,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsInteractingMode;
+
 protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	AMyCharacter* GetMyCharacterRef() const;
@@ -69,6 +70,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void TransferAllItems(UMyInventoryComponent* FromInventory, UMyInventoryComponent* ToInventory);
+
 private:
 	void ConfigureCharacterEvents();
 };

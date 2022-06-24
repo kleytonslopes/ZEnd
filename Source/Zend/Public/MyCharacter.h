@@ -13,9 +13,11 @@ class USpringArmComponent;
 class UMyStatusManagerComponent;
 class UMyStatusComponent;
 class UMyInventoryComponent;
+class AMyItem;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsWalkingSignature, bool, IsWalking);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsRunningSignature, bool, IsRunning);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemEquippedSignature, FItem, ItemEquipped);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthIsEmptySignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMyHealthChangedSignature, float, Percent);
@@ -28,11 +30,16 @@ class ZEND_API AMyCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+private:
+	AMyItem* EquippedItem;
+
 public:
 	UPROPERTY(BlueprintAssignable, Category = "My Character")
 	FOnIsWalkingSignature OnIsWalkingSignature;
 	UPROPERTY(BlueprintAssignable, Category = "My Character")
 	FOnIsRunningSignature OnIsRunningSignature;
+	UPROPERTY(BlueprintAssignable, Category = "My Character")
+	FOnItemEquippedSignature OnItemEquippedSignature;
 
 	UPROPERTY(BlueprintAssignable, Category = "My Character")
 	FOnHealthIsEmptySignature OnHealthIsEmptySignature;
@@ -85,6 +92,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "My Character")
 	float MaxZoomOut = 400.f;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "My Character")
 	float MaxZoomIn = 10.f;
 
@@ -118,7 +126,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "My Character")
 	void ZoomOut(float value);
 
-
 	UFUNCTION(BlueprintCallable, Category = "My Character")
 	void BeginJump();
 
@@ -140,6 +147,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "My Character")
 	void Interact();
 
+	UFUNCTION(BlueprintCallable, Category = "My Character")
+	void UsePrimaryItem();
 public:
 	UFUNCTION(Category = "My Character")
 	void OnHealthIsEmptyEvent();
@@ -167,6 +176,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "My Character")
 	void GetAllItemsFromInventory(UMyInventoryComponent* OtherInventory);
+
+	UFUNCTION(BlueprintCallable, Category = "My Character")
+	void SetItemEquipped(AMyItem* ItemToEquipped);
+
+	UFUNCTION()
+	void OnPrimaryItemUsedEvent();
 
 	UMyStatusComponent* GetHealthComponent() const;
 	UMyStatusComponent* GetThirstComponent() const;

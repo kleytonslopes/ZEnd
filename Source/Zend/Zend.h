@@ -10,3 +10,5 @@
 
 #define DATA_ITEM    "DataTable'/Game/Data/DT_Items.DT_Items'"
 #define DATA_LOOTBOX "DataTable'/Game/Data/DT_LootBox.DT_LootBox'"
+
+#define COLLISION_ITEM_CHANNEL ECollisionChannel::ECC_GameTraceChannel1 
