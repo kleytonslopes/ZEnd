@@ -28,7 +28,6 @@ AMyCharacter::AMyCharacter()
 	GetMovementComponent()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
-	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 
 	GetCapsuleComponent()->bHiddenInGame = true;
 
@@ -52,12 +51,14 @@ AMyCharacter::AMyCharacter()
 
 	DefaultInventory = CreateDefaultSubobject<UMyInventoryComponent>(TEXT("DefaultInventory"));
 
-	CurrentSpeed = MaxWalkSpeed;
+	
 }
 
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	InitializeDefaults();
 
 	ConfigureStatusComponents();
 
@@ -76,6 +77,21 @@ void AMyCharacter::InterpolateWalkingSpeed(float DeltaTime)
 	UE_LOG(LogTemp, Warning, TEXT("Speed: %f"), GetCharacterMovement()->MaxWalkSpeed);
 }
 
+UMyStatusComponent* AMyCharacter::GetHealthComponent() const
+{
+	return HealthComponent;
+}
+
+UMyStatusComponent* AMyCharacter::GetThirstComponent() const
+{
+	return ThirstComponent;
+}
+
+TArray<FItemDataSaveGame> AMyCharacter::GetItemsToSaveData() const
+{
+	return DefaultInventory->GetItemsToSaveGame();
+}
+
 void AMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -88,6 +104,7 @@ void AMyCharacter::OnTakeAnyDamageEvent(AActor* DamagedActor, float Damage, cons
 
 void AMyCharacter::LookUp(float value)
 {
+	if (bIsDead) return;
 	if (Controller && value != 0.f)
 	{
 		AddControllerPitchInput(-value);
@@ -96,6 +113,7 @@ void AMyCharacter::LookUp(float value)
 
 void AMyCharacter::Turn(float value)
 {
+	if (bIsDead) return;
 	if (Controller && value != 0.f)
 	{
 		AddControllerYawInput(value);
@@ -104,6 +122,7 @@ void AMyCharacter::Turn(float value)
 
 void AMyCharacter::MoveForward(float value)
 {
+	if (bIsDead) return;
 	if (Controller && value != 0.f)
 	{
 		const FRotator rotation = Controller->GetControlRotation();
@@ -128,6 +147,7 @@ void AMyCharacter::MoveForward(float value)
 
 void AMyCharacter::MoveRight(float value)
 {
+	if (bIsDead) return;
 	if (Controller && value != 0.f)
 	{
 		const FRotator rotation = Controller->GetControlRotation();
@@ -166,6 +186,7 @@ void AMyCharacter::ZoomOut(float value)
 
 void AMyCharacter::BeginJump()
 {
+	if (bIsDead) return;
 	if (Controller)
 	{
 		if (!CheckIfStatusInDangerZone())
@@ -175,6 +196,7 @@ void AMyCharacter::BeginJump()
 
 void AMyCharacter::BeginCrouch()
 {
+	if (bIsDead) return;
 	if (Controller)
 	{
 		Crouch();
@@ -183,6 +205,7 @@ void AMyCharacter::BeginCrouch()
 
 void AMyCharacter::EndCrouch()
 {
+	if (bIsDead) return;
 	if (Controller)
 	{
 		UnCrouch();
@@ -199,6 +222,7 @@ void AMyCharacter::ToggleCrouch()
 
 void AMyCharacter::BeginRun()
 {
+	if (bIsDead) return;
 	if (Controller)
 	{
 		if (CheckIfStatusInDangerZone())
@@ -222,6 +246,8 @@ void AMyCharacter::EndRun()
 
 void AMyCharacter::Interact()
 {
+	if (bIsDead) return;
+
 	FHitResult MouseHitResult;
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	bool bMouseHitResult = PC->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, MouseHitResult);
@@ -270,7 +296,7 @@ void AMyCharacter::Interact()
 
 void AMyCharacter::UsePrimaryItem()
 {
-	if (!EquippedItem)
+	if (!EquippedItem || bIsDead)
 		return;
 
 	EquippedItem->UseItem();
@@ -371,19 +397,11 @@ void AMyCharacter::OnPrimaryItemUsedEvent()
 		OnItemEquippedSignature.Broadcast(FItem());
 }
 
-UMyStatusComponent* AMyCharacter::GetHealthComponent() const
+void AMyCharacter::InitializeDefaults()
 {
-	return HealthComponent;
-}
-
-UMyStatusComponent* AMyCharacter::GetThirstComponent() const
-{
-	return ThirstComponent;
-}
-
-TArray<FItemDataSaveGame> AMyCharacter::GetItemsToSaveData() const
-{
-	return DefaultInventory->GetItemsToSaveGame();
+	CurrentSpeed = MaxWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeedCrouched = MaxWalkSpeed / 2;
 }
 
 void AMyCharacter::ConfigureStatusComponents()

@@ -32,6 +32,7 @@ class ZEND_API AMyCharacter : public ACharacter
 
 private:
 	AMyItem* EquippedItem;
+	int8 SelectedItemIndex = 0;
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "My Character")
@@ -103,6 +104,11 @@ protected:
 	virtual void BeginPlay() override;
 
 	void InterpolateWalkingSpeed(float DeltaTime);
+
+public:
+	UMyStatusComponent* GetHealthComponent() const;
+	UMyStatusComponent* GetThirstComponent() const;
+	TArray<FItemDataSaveGame> GetItemsToSaveData() const;
 
 public:	
 	virtual void Tick(float DeltaTime) override;
@@ -183,10 +189,8 @@ public:
 	UFUNCTION()
 	void OnPrimaryItemUsedEvent();
 
-	UMyStatusComponent* GetHealthComponent() const;
-	UMyStatusComponent* GetThirstComponent() const;
-	TArray<FItemDataSaveGame> GetItemsToSaveData() const;
 private:
+	void InitializeDefaults();
 	void ConfigureStatusComponents();
 	void ConfigureDefaultInventoryComponent();
 	bool CheckIfStatusInDangerZone() const;
