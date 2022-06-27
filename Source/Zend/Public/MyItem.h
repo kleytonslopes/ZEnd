@@ -38,6 +38,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void UseItem();
 
+	UFUNCTION(BlueprintCallable)
+	void ApplyStateToOwner();
+
 protected:
 	virtual void BeginPlay() override;
 

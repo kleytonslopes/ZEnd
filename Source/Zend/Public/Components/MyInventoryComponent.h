@@ -10,6 +10,14 @@
 class UTexture2D;
 class AMyItem;
 
+UENUM(BlueprintType)
+enum EItemType
+{
+	IT_None UMETA(DisplayName = "None"),
+	IT_Consumable UMETA(DisplayName = "Consumable"),
+	IT_Weapon UMETA(DisplayName = "Weapon")
+};
+
 USTRUCT(BlueprintType)
 struct FItem : public FTableRowBase
 {
@@ -27,43 +35,55 @@ public:
 		DropMesh = nullptr;
 		Durability = 1.f;
 		MaxDurability = 1.f;
+		ItemType = EItemType::IT_None;
+		ChangeHealth = 0.f;
+		ChangeThirst = 0.f;
 		DurabilityPerUse = 1.f;
 		ItemClass = nullptr;
 
 		GenerateNewCode();
 	}
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	FString Id;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	FString Code;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	FName Name;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	FText Description;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	float Durability;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	float MaxDurability;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	float DurabilityPerUse;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
+	TEnumAsByte<EItemType> ItemType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Consumable")
+	float ChangeHealth;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Consumable")
+	float ChangeThirst;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	UTexture2D* Icon;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	UStaticMesh* Mesh;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	UStaticMesh* DropMesh;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Defaults")
 	TSubclassOf<AMyItem> ItemClass;
 
 	bool IsValid()

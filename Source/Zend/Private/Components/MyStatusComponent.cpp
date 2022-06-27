@@ -56,6 +56,14 @@ void UMyStatusComponent::ChangeValueNatural()
 	}
 }
 
+void UMyStatusComponent::ChangeValueByValue(float Value)
+{
+	if(Value > 0.f)
+		IncreaseValue(Value);
+	else if(Value < 0.f)
+		DecreaseValue(-Value);
+}
+
 void UMyStatusComponent::IncreaseValue(float Value)
 {
 	if (Value > 0.f)

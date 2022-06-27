@@ -36,6 +36,7 @@ void AMyItemDrop::OnInteract(AActor* Caller)
 			SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 			AMyItem* Item = GetWorld()->SpawnActor<AMyItem>(Items[0].ItemClass, GetActorLocation(), GetActorRotation(), SpawnParameters);
+			Item->SetOwner(CharacterCaller);
 			CharacterCaller->AddItemsToInventory(Items);
 			CharacterCaller->SetItemEquipped(Item);
 			

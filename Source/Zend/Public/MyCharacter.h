@@ -186,6 +186,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "My Character")
 	void SetItemEquipped(AMyItem* ItemToEquipped);
 
+	UFUNCTION(BlueprintCallable, Category = "My Character")
+	void ApplyItemStatus(FItem Item);
+
 	UFUNCTION()
 	void OnPrimaryItemUsedEvent();
 
@@ -196,4 +199,5 @@ private:
 	bool CheckIfStatusInDangerZone() const;
 	void TraceEyesLine(ECollisionChannel CollisionChannel, FVector EndLocation, FHitResult& HitResult, bool& Success, bool DrawDebug);
 	void KillSelf();
+	void ApplyConsumableItemStatus(FItem Item);
 };

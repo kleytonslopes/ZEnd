@@ -51,7 +51,7 @@ AMyCharacter::AMyCharacter()
 
 	DefaultInventory = CreateDefaultSubobject<UMyInventoryComponent>(TEXT("DefaultInventory"));
 
-	
+
 }
 
 void AMyCharacter::BeginPlay()
@@ -389,6 +389,11 @@ void AMyCharacter::SetItemEquipped(AMyItem* ItemToEquipped)
 	OnItemEquippedSignature.Broadcast(ItemToEquipped->ItemInfor);
 }
 
+void AMyCharacter::ApplyItemStatus(FItem Item)
+{
+	ApplyConsumableItemStatus(Item);
+}
+
 void AMyCharacter::OnPrimaryItemUsedEvent()
 {
 	if (EquippedItem)
@@ -457,5 +462,11 @@ void AMyCharacter::KillSelf()
 
 		Destroy();
 	}
+}
+
+void AMyCharacter::ApplyConsumableItemStatus(FItem Item)
+{
+	HealthComponent->ChangeValueByValue(Item.ChangeHealth);
+	ThirstComponent->ChangeValueByValue(Item.ChangeThirst);
 }
 

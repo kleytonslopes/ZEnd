@@ -104,6 +104,9 @@ public:
 	void ChangeValueNatural();
 
 	UFUNCTION(BlueprintCallable)
+	void ChangeValueByValue(float Value);
+
+	UFUNCTION(BlueprintCallable)
 	void IncreaseValue(float Value);
 
 	UFUNCTION(BlueprintCallable)
