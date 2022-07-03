@@ -269,7 +269,7 @@ void AMyCharacter::Interact()
 
 		///UUserWidget* InteractionTex = InteractionTextWidget->GetWidget();
 
-		TraceEyesLine(ECollisionChannel::ECC_Visibility, EndLocation, HitResult, Success, true);
+		TraceEyesLine(INTERACT_TRACE_CHANNEL, EndLocation, HitResult, Success, true);
 
 		AActor* HitActor = HitResult.GetActor();
 
@@ -448,7 +448,7 @@ void AMyCharacter::TraceEyesLine(ECollisionChannel CollisionChannel, FVector End
 
 	GetActorEyesViewPoint(StartLocation, Rotation);
 
-	Success = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Pawn, TraceParameters);
+	Success = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, CollisionChannel, TraceParameters);
 
 	if (DrawDebug)
 		DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 2.0f);

@@ -16,6 +16,8 @@ AMyItemDrop::AMyItemDrop()
 	if (ItemDataTableObject.Succeeded()) ItemDataTable = ItemDataTableObject.Object;
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECR_Ignore);
+	Mesh->SetCollisionResponseToChannel(INTERACT_TRACE_CHANNEL, ECR_Block);
 	SetRootComponent(Mesh);
 }
 
@@ -37,6 +39,7 @@ void AMyItemDrop::OnInteract(AActor* Caller)
 
 			AMyItem* Item = GetWorld()->SpawnActor<AMyItem>(Items[0].ItemClass, GetActorLocation(), GetActorRotation(), SpawnParameters);
 			Item->SetOwner(CharacterCaller);
+			Item->ItemInfor = Items[0];
 			CharacterCaller->AddItemsToInventory(Items);
 			CharacterCaller->SetItemEquipped(Item);
 			

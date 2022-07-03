@@ -26,36 +26,30 @@ void AMyContainer::BeginPlay()
 
 void AMyContainer::OnInteract(AActor* Caller)
 {
-	FVector EndLocation = GetActorLocation();
-	EndLocation.Z += 150.f;
+//	FVector EndLocation = GetActorLocation();
+//	EndLocation.Z += 150.f;
+//
+//	FHitResult HitResult;
+//	bool Success;
 
-	FHitResult HitResult;
-	bool Success;
-
-	TraceLine(ECollisionChannel::ECC_Visibility, EndLocation, HitResult, Success, true);
+//	TraceLine(ECollisionChannel::ECC_Visibility, EndLocation, HitResult, Success, true);
 
 	if (bIsFirstOpen) 
 	{
 		LootBox->GenerateItems();
 		Inventory->AddItems(LootBox->GetItems());
+		bIsFirstOpen = false;
 	}
 
 	AMyCharacter* MyCharacter = Cast<AMyCharacter>(Caller);
 	if (MyCharacter)
 	{
 		MyCharacter->SetContainerInventory(Inventory);
-
-		MyCharacter->GetAllItemsFromInventory(Inventory);
 	}
-
-	bIsFirstOpen = false;
-
 }
 
 bool AMyContainer::CanPickUp() const
 {
-
-
 	return false;
 }
 
@@ -66,7 +60,8 @@ void AMyContainer::TraceLine(ECollisionChannel CollisionChannel, FVector EndLoca
 	TraceParameters.AddIgnoredActor(this);
 	TraceParameters.bTraceComplex = true;
 
-	Success = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Pawn, TraceParameters);
+
+	Success = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, CollisionChannel, TraceParameters);
 
 	if (DrawDebug)
 		DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 2.0f);

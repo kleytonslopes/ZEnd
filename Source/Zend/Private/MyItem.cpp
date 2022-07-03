@@ -15,6 +15,8 @@ AMyItem::AMyItem()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 
 	Mesh->SetCollisionObjectType(COLLISION_ITEM_CHANNEL);
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECR_Ignore);
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECR_Ignore);
 
 	SetRootComponent(Mesh);
 }

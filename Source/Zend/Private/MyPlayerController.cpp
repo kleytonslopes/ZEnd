@@ -62,6 +62,16 @@ void AMyPlayerController::EndCursorMode()
 	bShowMouseCursor = false;
 }
 
+void AMyPlayerController::ToggleInventory()
+{
+	bInventoryIsOpen = !bInventoryIsOpen;
+
+	if(bInventoryIsOpen)
+		ShowInventory();
+	else
+		HideInventory();
+}
+
 void AMyPlayerController::TransferAllItems(UMyInventoryComponent* FromInventory, UMyInventoryComponent* ToInventory)
 {
 	InventoryManager->SetPrymaryInventory(FromInventory);

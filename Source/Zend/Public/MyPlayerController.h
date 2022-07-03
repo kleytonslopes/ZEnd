@@ -32,6 +32,9 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsInteractingMode;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bInventoryIsOpen;
+
 protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	AMyCharacter* GetMyCharacterRef() const;
@@ -48,6 +51,13 @@ public:
 	void BeginCursorMode();
 	UFUNCTION(BlueprintCallable)
 	void EndCursorMode();
+
+	UFUNCTION(BlueprintCallable)
+	void ToggleInventory();
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowInventory();
+	UFUNCTION(BlueprintImplementableEvent)
+	void HideInventory();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnCharacterHealthChanged(float Percent);
