@@ -8,7 +8,23 @@ public class Zend : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { 
+			"Core", 
+			"CoreUObject", 
+			"Engine", 
+			"InputCore",
+			"Slate",
+			"SlateCore",
+			"UMG",
+			"Lobby",
+		});
+
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"OnlineSubsystem",
+			"OnlineSubsystemNull",
+			"OnlineSubsystemSteam",
+			"OnlineSubsystemUtils"
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
